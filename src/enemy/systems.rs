@@ -1,16 +1,15 @@
-use bevy::{
-    prelude::*,
-    window::PrimaryWindow,
-    audio::{AudioBundle},
-};
+use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use rand::random;
-use crate::game_config::{EnemySpawnTimer, GameConfig};
-use crate::player::Player;
 
-#[derive(Component)]
-pub struct Enemy {
-    pub direction: Vec3,
-}
+use crate::config::GameConfig;
+use crate::enemy::components::Enemy;
+use crate::enemy::resources::EnemySpawnTimer;
+use crate::events::GameOverEvent;
+use crate::player::PlayerPlugin;
+use crate::score::resources::Score;
+use crate::score::ScorePlugin;
+use crate::star::StarPlugin;
 
 pub fn spawn_enemies(
     mut commands: Commands,
@@ -47,7 +46,7 @@ pub fn enemy_movement(
     }
 }
 
-pub fn update_enemy_movement(
+pub fn update_enemy_direction(
     mut enemy_query: Query<(&mut Transform, &mut Enemy)>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     config: Res<GameConfig>,
@@ -87,10 +86,12 @@ pub fn update_enemy_movement(
 
 pub fn enemy_hit_player(
     mut commands: Commands,
-    mut player_query: Query<(Entity, &Transform), With<Player>>,
+    mut player_query: Query<(Entity, &Transform), With<PlayerPlugin>>,
+    mut game_over_event_write: EventWriter<GameOverEvent>,
     enemy_query: Query<&Transform, With<Enemy>>,
     asset_server: Res<AssetServer>,
     config: Res<GameConfig>,
+    score: Res<Score>,
 ) {
     if let Ok((player_entity, player_transform)) = player_query.get_single_mut() {
         let player_radius = config.player_size / 2.0;
@@ -101,14 +102,46 @@ pub fn enemy_hit_player(
 
             if distance < player_radius + enemy_radius {
                 commands.spawn((
-                  AudioBundle {
-                      source: asset_server.load("audio/explosionCrunch_000.ogg"),
-                      ..default()
-                  },
-                  Player
-               ));
+                    AudioBundle {
+                        source: asset_server.load("audio/explosionCrunch_000.ogg"),
+                        ..default()
+                    },
+                ));
 
                 commands.entity(player_entity).despawn();
+                game_over_event_write.send(GameOverEvent { score: score.value as u32 });
+            }
+        }
+    }
+}
+
+pub fn player_hit_star(
+    mut commands: Commands,
+    player_query: Query<&Transform, With<PlayerPlugin>>,
+    star_query: Query<(Entity, &Transform), With<StarPlugin>>,
+    asset_server: Res<AssetServer>,
+    config: Res<GameConfig>,
+    mut score: ResMut<ScorePlugin>,
+) {
+    if let Ok(player_transform) = player_query.get_single() {
+        for (star_entity, star_transform) in star_query.iter() {
+            let distance = player_transform
+                .translation
+                .distance(star_transform.translation);
+
+            if distance < config.player_size / 2.0 + config.star_size / 2.0 {
+                println!("Player hit star!");
+                score.value += 1;
+
+                commands.spawn((
+                    AudioBundle {
+                        source: asset_server.load("audio/impactMining_000.ogg"),
+                        ..default()
+                    },
+                    Star,
+                ));
+
+                commands.entity(star_entity).despawn();
             }
         }
     }

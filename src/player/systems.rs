@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::game_config::GameConfig;
 
-#[derive(Component)]
-pub struct Player;
+use crate::config::GameConfig;
+use crate::player::components::Player;
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -22,14 +21,6 @@ pub fn spawn_player(
     ));
 }
 
-pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
-    let window = window_query.single();
-
-    commands.spawn(Camera2dBundle {
-        transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
-        ..default()
-    });
-}
 
 pub fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
