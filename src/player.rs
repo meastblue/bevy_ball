@@ -1,9 +1,6 @@
-use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-
-const PLAYER_SPEED: f32 = 500.0;
-const PLAYER_SIZE: f32 = 64.0;
+use crate::game_config::GameConfig;
 
 #[derive(Component)]
 pub struct Player;
@@ -37,7 +34,8 @@ pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<Pr
 pub fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<&mut Transform, With<Player>>,
-    time: Res<Time>
+    time: Res<Time>,
+    config: Res<GameConfig>,
 ) {
     if let Ok(mut transform) = player_query.get_single_mut() {
         let mut direction = Vec3::ZERO;
@@ -59,33 +57,34 @@ pub fn player_movement(
             direction = direction.normalize();
         }
 
-        transform.translation += direction * PLAYER_SPEED * time.delta_seconds();
+        transform.translation += direction * config.player_speed * time.delta_seconds();
     }
 }
 
 pub fn confine_player_movement(
     mut player_query: Query<&mut Transform, With<Player>>,
-    window_query: Query<&Window, With<PrimaryWindow>>
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    config: Res<GameConfig>,
 ) {
     if let Ok(mut player_transform) = player_query.get_single_mut() {
-        let window = window_query.get_single().unwrap();
-        let half_player_size = PLAYER_SIZE / 2.0;
-        let x_min = 0.0 + half_player_size;
+        let window = window_query.single();
+        let half_player_size = config.player_size / 2.0;
+        let x_min = half_player_size;
         let x_max = window.width() - half_player_size;
-        let y_min = 0.0 + half_player_size;
+        let y_min = half_player_size;
         let y_max = window.height() - half_player_size;
         let mut translation = player_transform.translation;
 
         if translation.x < x_min {
             translation.x = x_min;
-        } else if translation.x > x_max{
-            translation.x = x_max
+        } else if translation.x > x_max {
+            translation.x = x_max;
         }
 
         if translation.y < y_min {
             translation.y = y_min;
-        } else if translation.y > y_max{
-            translation.y = y_max
+        } else if translation.y > y_max {
+            translation.y = y_max;
         }
 
         player_transform.translation = translation;
