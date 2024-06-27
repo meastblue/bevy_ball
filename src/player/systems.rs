@@ -1,15 +1,19 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
-use crate::config::GameConfig;
-use crate::player::components::Player;
+use super::components::Player;
+use crate::enemy::components::*;
+use crate::events::GameOverEvent;
+use crate::resources::GameConfig;
+use crate::score::resources::*;
+use crate::star::components::Star;
 
 pub fn spawn_player(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
 ) {
-    let window = window_query.single();
+    let window = window_query.get_single().unwrap();
 
     commands.spawn((
         SpriteBundle {
@@ -17,10 +21,9 @@ pub fn spawn_player(
             texture: asset_server.load("sprites/ball_blue_large.png"),
             ..default()
         },
-        Player,
+        Player {},
     ));
 }
-
 
 pub fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
@@ -32,16 +35,16 @@ pub fn player_movement(
         let mut direction = Vec3::ZERO;
 
         if keyboard_input.pressed(KeyCode::ArrowLeft) || keyboard_input.pressed(KeyCode::KeyA) {
-            direction.x -= 1.0;
+            direction += Vec3::new(-1.0, 0.0, 0.0);
         }
         if keyboard_input.pressed(KeyCode::ArrowRight) || keyboard_input.pressed(KeyCode::KeyD) {
-            direction.x += 1.0;
+            direction += Vec3::new(1.0, 0.0, 0.0);
         }
         if keyboard_input.pressed(KeyCode::ArrowUp) || keyboard_input.pressed(KeyCode::KeyW) {
-            direction.y += 1.0;
+            direction += Vec3::new(0.0, 1.0, 0.0);
         }
         if keyboard_input.pressed(KeyCode::ArrowDown) || keyboard_input.pressed(KeyCode::KeyS) {
-            direction.y -= 1.0;
+            direction += Vec3::new(0.0, -1.0, 0.0);
         }
 
         if direction.length() > 0.0 {
@@ -55,15 +58,17 @@ pub fn player_movement(
 pub fn confine_player_movement(
     mut player_query: Query<&mut Transform, With<Player>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    config: Res<GameConfig>,
+    config: Res<GameConfig>
 ) {
     if let Ok(mut player_transform) = player_query.get_single_mut() {
-        let window = window_query.single();
+        let window = window_query.get_single().unwrap();
+
         let half_player_size = config.player_size / 2.0;
-        let x_min = half_player_size;
+        let x_min = 0.0 + half_player_size;
         let x_max = window.width() - half_player_size;
-        let y_min = half_player_size;
+        let y_min = 0.0 + half_player_size;
         let y_max = window.height() - half_player_size;
+
         let mut translation = player_transform.translation;
 
         if translation.x < x_min {
@@ -71,7 +76,6 @@ pub fn confine_player_movement(
         } else if translation.x > x_max {
             translation.x = x_max;
         }
-
         if translation.y < y_min {
             translation.y = y_min;
         } else if translation.y > y_max {
@@ -79,5 +83,68 @@ pub fn confine_player_movement(
         }
 
         player_transform.translation = translation;
+    }
+}
+
+pub fn enemy_hit_player(
+    mut commands: Commands,
+    mut game_over_event_writer: EventWriter<GameOverEvent>,
+    mut player_query: Query<(Entity, &Transform), With<Player>>,
+    enemy_query: Query<&Transform, With<Enemy>>,
+    asset_server: Res<AssetServer>,
+    config: Res<GameConfig>,
+    score: Res<Score>,
+) {
+    if let Ok((player_entity, player_transform)) = player_query.get_single_mut() {
+        let player_radius = config.player_size / 2.0;
+        let enemy_radius = config.enemy_size / 2.0;
+
+        for enemy_transform in enemy_query.iter() {
+            let distance = player_transform.translation.distance(enemy_transform.translation);
+
+            if distance < player_radius + enemy_radius {
+                commands.spawn((
+                    AudioBundle {
+                        source: asset_server.load("audio/explosionCrunch_000.ogg"),
+                        ..default()
+                    },
+                ));
+
+                commands.entity(player_entity).despawn();
+                game_over_event_writer.send(GameOverEvent { score: score.value as u32 });
+            }
+        }
+    }
+}
+
+pub fn player_hit_star(
+    mut commands: Commands,
+    player_query: Query<&Transform, With<Player>>,
+    star_query: Query<(Entity, &Transform), With<Star>>,
+    asset_server: Res<AssetServer>,
+    config: Res<GameConfig>,
+    mut score: ResMut<Score>,
+) {
+    if let Ok(player_transform) = player_query.get_single() {
+        for (star_entity, star_transform) in star_query.iter() {
+            let distance = player_transform
+                .translation
+                .distance(star_transform.translation);
+
+            if distance < config.player_size / 2.0 + config.star_size / 2.0 {
+                println!("Player hit star!");
+                score.value += 1;
+
+                commands.spawn((
+                    AudioBundle {
+                        source: asset_server.load("audio/laserLarge_000.ogg"),
+                        ..default()
+                    },
+                    Star,
+                ));
+
+                commands.entity(star_entity).despawn();
+            }
+        }
     }
 }

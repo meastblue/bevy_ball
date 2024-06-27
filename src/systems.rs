@@ -1,12 +1,11 @@
 use bevy::app::AppExit;
-use bevy::input::ButtonInput;
-use bevy::prelude::{Camera2dBundle, Commands, default, EventReader, EventWriter, KeyCode, Query, Res, Transform, Window, With};
+use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
-use crate::events::GameOverEvent;
+use crate::events::*;
 
 pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
-    let window = window_query.single();
+    let window = window_query.get_single().unwrap();
 
     commands.spawn(Camera2dBundle {
         transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
@@ -15,8 +14,8 @@ pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<Pr
 }
 
 pub fn exit_game(
-    mut app_exit_event_writer: EventWriter<AppExit>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut app_exit_event_writer: EventWriter<AppExit>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         app_exit_event_writer.send(AppExit);

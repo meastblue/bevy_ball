@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
-use crate::score::{resources::*, systems::*};
-
 pub mod resources;
 mod systems;
+
+use resources::*;
+use systems::*;
 
 pub struct ScorePlugin;
 

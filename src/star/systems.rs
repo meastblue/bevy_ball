@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use rand::random;
+use rand::prelude::*;
+use crate::resources::GameConfig;
 
-use crate::config::GameConfig;
-use crate::star::components::Star;
-use crate::star::resources::StarSpawnTimer;
+use super::components::Star;
+use super::resources::*;
 
 pub fn spawn_stars(
     mut commands: Commands,
@@ -24,7 +24,7 @@ pub fn spawn_stars(
                 texture: asset_server.load("sprites/star.png"),
                 ..default()
             },
-            Star,
+            Star {},
         ));
     }
 }

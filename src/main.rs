@@ -1,36 +1,36 @@
-use bevy::prelude::*;
+pub mod events;
+mod systems;
+
+pub mod enemy;
+mod player;
+pub mod score;
+pub mod star;
+mod resources;
 
 use events::*;
+use systems::*;
 
-use crate::config::GameConfig;
-use crate::enemy::EnemyPlugin;
-use crate::events::GameOverEvent;
-use crate::player::PlayerPlugin;
-use crate::score::ScorePlugin;
-use crate::star::StarPlugin;
-use crate::systems::{exit_game, handle_game_over};
+use enemy::EnemyPlugin;
+use player::PlayerPlugin;
+use score::ScorePlugin;
+use star::StarPlugin;
 
-mod config;
-mod events;
-mod player;
-mod score;
-mod enemy;
-mod star;
-
-mod systems;
+use bevy::prelude::*;
+use crate::resources::GameConfig;
 
 fn main() {
     let config = GameConfig::default();
-
+    
     App::new()
         .insert_resource(config.clone())
-        .add_event::<GameOverEvent>()
         .add_plugins(DefaultPlugins)
-        .add_plugins(PlayerPlugin)
+        .add_event::<GameOverEvent>()
         .add_plugins(EnemyPlugin)
-        .add_plugins(StarPlugin)
+        .add_plugins(PlayerPlugin)
         .add_plugins(ScorePlugin)
-        .add_system(exit_game)
-        .add_system(handle_game_over)
+        .add_plugins(StarPlugin)
+        .add_systems(Startup, spawn_camera)
+        .add_systems(Last, exit_game)
+        .add_systems(Last, handle_game_over)
         .run();
 }

@@ -1,5 +1,4 @@
-use bevy::math::Vec3;
-use bevy::prelude::Component;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Enemy {

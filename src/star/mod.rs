@@ -1,13 +1,11 @@
 use bevy::prelude::*;
 
-use crate::star::{
-    resources::*,
-    systems::*,
-};
-
-mod systems;
+pub mod components;
 mod resources;
-mod components;
+mod systems;
+
+use resources::*;
+use systems::*;
 
 pub struct StarPlugin;
 

@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 
-use crate::enemy::{resources::*, systems::*};
-
-mod components;
-mod resources;
+pub mod components;
+pub mod resources;
 mod systems;
+
+use resources::*;
+use systems::*;
 
 pub struct EnemyPlugin;
 

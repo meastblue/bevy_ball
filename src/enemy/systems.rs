@@ -1,15 +1,9 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use rand::random;
-
-use crate::config::GameConfig;
-use crate::enemy::components::Enemy;
-use crate::enemy::resources::EnemySpawnTimer;
-use crate::events::GameOverEvent;
-use crate::player::PlayerPlugin;
-use crate::score::resources::Score;
-use crate::score::ScorePlugin;
-use crate::star::StarPlugin;
+use rand::prelude::*;
+use crate::resources::GameConfig;
+use super::components::*;
+use super::resources::*;
 
 pub fn spawn_enemies(
     mut commands: Commands,
@@ -84,72 +78,9 @@ pub fn update_enemy_direction(
     }
 }
 
-pub fn enemy_hit_player(
-    mut commands: Commands,
-    mut player_query: Query<(Entity, &Transform), With<PlayerPlugin>>,
-    mut game_over_event_write: EventWriter<GameOverEvent>,
-    enemy_query: Query<&Transform, With<Enemy>>,
-    asset_server: Res<AssetServer>,
-    config: Res<GameConfig>,
-    score: Res<Score>,
-) {
-    if let Ok((player_entity, player_transform)) = player_query.get_single_mut() {
-        let player_radius = config.player_size / 2.0;
-        let enemy_radius = config.enemy_size / 2.0;
-
-        for enemy_transform in enemy_query.iter() {
-            let distance = player_transform.translation.distance(enemy_transform.translation);
-
-            if distance < player_radius + enemy_radius {
-                commands.spawn((
-                    AudioBundle {
-                        source: asset_server.load("audio/explosionCrunch_000.ogg"),
-                        ..default()
-                    },
-                ));
-
-                commands.entity(player_entity).despawn();
-                game_over_event_write.send(GameOverEvent { score: score.value as u32 });
-            }
-        }
-    }
-}
-
-pub fn player_hit_star(
-    mut commands: Commands,
-    player_query: Query<&Transform, With<PlayerPlugin>>,
-    star_query: Query<(Entity, &Transform), With<StarPlugin>>,
-    asset_server: Res<AssetServer>,
-    config: Res<GameConfig>,
-    mut score: ResMut<ScorePlugin>,
-) {
-    if let Ok(player_transform) = player_query.get_single() {
-        for (star_entity, star_transform) in star_query.iter() {
-            let distance = player_transform
-                .translation
-                .distance(star_transform.translation);
-
-            if distance < config.player_size / 2.0 + config.star_size / 2.0 {
-                println!("Player hit star!");
-                score.value += 1;
-
-                commands.spawn((
-                    AudioBundle {
-                        source: asset_server.load("audio/impactMining_000.ogg"),
-                        ..default()
-                    },
-                    Star,
-                ));
-
-                commands.entity(star_entity).despawn();
-            }
-        }
-    }
-}
-
 pub fn tick_enemy_spawn_timer(
-    time: Res<Time>,
     mut enemy_spawn_timer: ResMut<EnemySpawnTimer>,
+    time: Res<Time>,
 ) {
     enemy_spawn_timer.timer.tick(time.delta());
 }
