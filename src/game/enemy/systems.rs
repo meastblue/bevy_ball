@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
-use crate::resources::GameConfig;
+use crate::game::config::resources::Config;
 use super::components::*;
 use super::resources::*;
 
@@ -9,7 +9,7 @@ pub fn spawn_enemies(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
-    config: Res<GameConfig>,
+    config: Res<Config>,
 ) {
     let window = window_query.get_single().unwrap();
 
@@ -33,7 +33,7 @@ pub fn spawn_enemies(
 pub fn enemy_movement(
     mut enemy_query: Query<(&mut Transform, &Enemy)>,
     time: Res<Time>,
-    config: Res<GameConfig>,
+    config: Res<Config>,
 ) {
     for (mut transform, enemy) in enemy_query.iter_mut() {
         transform.translation += enemy.direction * config.enemy_speed * time.delta_seconds();
@@ -43,7 +43,7 @@ pub fn enemy_movement(
 pub fn update_enemy_direction(
     mut enemy_query: Query<(&mut Transform, &mut Enemy)>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    config: Res<GameConfig>,
+    config: Res<Config>,
 ) {
     let window = window_query.get_single().unwrap();
     let half_enemy_size = config.enemy_size / 2.0;

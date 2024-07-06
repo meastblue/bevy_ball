@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Resource, Clone, Debug)]
-pub struct GameConfig {
+pub struct Config {
     pub player_speed: f32,
     pub player_size: f32,
     pub enemy_speed: f32,
@@ -13,7 +13,7 @@ pub struct GameConfig {
     pub star_spawn_time: f32,
 }
 
-impl Default for GameConfig {
+impl Default for Config {
     fn default() -> Self {
         Self {
             player_speed: 500.0,

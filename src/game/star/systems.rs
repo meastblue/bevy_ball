@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
-use crate::resources::GameConfig;
+use crate::game::config::resources::Config;
 
 use super::components::Star;
 use super::resources::*;
@@ -10,7 +10,7 @@ pub fn spawn_stars(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
-    config: Res<GameConfig>,
+    config: Res<Config>,
 ) {
     let window = window_query.get_single().unwrap();
 

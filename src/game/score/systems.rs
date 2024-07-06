@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
+use crate::game::config::events::GameOverEvent;
+
 use super::resources::*;
-use crate::events::GameOverEvent;
 
 pub fn update_score(score: Res<Score>) {
     if score.is_changed() {

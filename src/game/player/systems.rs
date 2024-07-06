@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
 use super::components::Player;
-use crate::enemy::components::*;
-use crate::events::GameOverEvent;
-use crate::resources::GameConfig;
-use crate::score::resources::*;
-use crate::star::components::Star;
+use crate::game::enemy::components::*;
+use crate::game::config::events::GameOverEvent;
+use crate::game::config::resources::Config;
+use crate::game::score::resources::*;
+use crate::game::star::components::Star;
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -29,7 +29,7 @@ pub fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<&mut Transform, With<Player>>,
     time: Res<Time>,
-    config: Res<GameConfig>,
+    config: Res<Config>,
 ) {
     if let Ok(mut transform) = player_query.get_single_mut() {
         let mut direction = Vec3::ZERO;
@@ -58,7 +58,7 @@ pub fn player_movement(
 pub fn confine_player_movement(
     mut player_query: Query<&mut Transform, With<Player>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    config: Res<GameConfig>
+    config: Res<Config>
 ) {
     if let Ok(mut player_transform) = player_query.get_single_mut() {
         let window = window_query.get_single().unwrap();
@@ -92,7 +92,7 @@ pub fn enemy_hit_player(
     mut player_query: Query<(Entity, &Transform), With<Player>>,
     enemy_query: Query<&Transform, With<Enemy>>,
     asset_server: Res<AssetServer>,
-    config: Res<GameConfig>,
+    config: Res<Config>,
     score: Res<Score>,
 ) {
     if let Ok((player_entity, player_transform)) = player_query.get_single_mut() {
@@ -122,7 +122,7 @@ pub fn player_hit_star(
     player_query: Query<&Transform, With<Player>>,
     star_query: Query<(Entity, &Transform), With<Star>>,
     asset_server: Res<AssetServer>,
-    config: Res<GameConfig>,
+    config: Res<Config>,
     mut score: ResMut<Score>,
 ) {
     if let Ok(player_transform) = player_query.get_single() {

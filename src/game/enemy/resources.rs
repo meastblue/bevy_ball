@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::resources::GameConfig;
+use crate::game::config::resources::Config;
 
 
 #[derive(Resource)]
@@ -8,7 +8,7 @@ pub struct EnemySpawnTimer {
 }
 
 pub trait FromConfig {
-    fn from_config(config: &GameConfig) -> Self;
+    fn from_config(config: &Config) -> Self;
 }
 
 impl Default for EnemySpawnTimer {
@@ -20,10 +20,9 @@ impl Default for EnemySpawnTimer {
 }
 
 impl FromConfig for EnemySpawnTimer {
-    fn from_config(config: &GameConfig) -> EnemySpawnTimer {
+    fn from_config(config: &Config) -> EnemySpawnTimer {
         EnemySpawnTimer {
             timer: Timer::from_seconds(config.enemy_spawn_time, TimerMode::Repeating),
         }
     }
-
 }

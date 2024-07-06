@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::resources::GameConfig;
+use crate::game::config::resources::Config;
 
 #[derive(Resource)]
 pub struct StarSpawnTimer {
@@ -7,7 +7,7 @@ pub struct StarSpawnTimer {
 }
 
 pub trait FromConfig {
-    fn from_config(config: &GameConfig) -> Self;
+    fn from_config(config: &Config) -> Self;
 }
 
 impl Default for StarSpawnTimer {
@@ -19,7 +19,7 @@ impl Default for StarSpawnTimer {
 }
 
 impl FromConfig for StarSpawnTimer {
-    fn from_config(config: &GameConfig) -> StarSpawnTimer {
+    fn from_config(config: &Config) -> StarSpawnTimer {
         StarSpawnTimer {
             timer: Timer::from_seconds(config.star_spawn_time, TimerMode::Repeating),
         }
