@@ -13,8 +13,8 @@ pub struct ConfigPlugin;
 
 #[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
 pub enum AppState {
-    #[default]
     Menu,
+    #[default]
     Game,
 }
 
@@ -24,9 +24,7 @@ impl Plugin for ConfigPlugin {
             .insert_resource(Config::default())
             .init_state::<AppState>()
             .add_systems(Startup, spawn_camera)
-            .add_systems(Last, handle_game_over)
-            .add_systems(Last, exit_game)
-            .add_systems(Update, transition_to_game_state)
-            .add_systems(Update, transition_to_menu_state);
+            .add_systems(Update, (transition_to_game_state, transition_to_menu_state))
+            .add_systems(Last, (handle_game_over, exit_game));
     }
 }

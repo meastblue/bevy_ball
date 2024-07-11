@@ -1,9 +1,9 @@
+use super::components::*;
+use super::resources::*;
+use crate::game::config::resources::Config;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
-use crate::game::config::resources::Config;
-use super::components::*;
-use super::resources::*;
 
 pub fn spawn_enemies(
     mut commands: Commands,
@@ -27,6 +27,12 @@ pub fn spawn_enemies(
                 direction: Vec3::new(random::<f32>(), random::<f32>(), 0.0).normalize(),
             },
         ));
+    }
+}
+
+pub fn despawn_enemies(mut commands: Commands, enemy_entity: Query<Entity, With<Enemy>>) {
+    if let Ok(enemy_entity) = enemy_entity.get_single() {
+        commands.entity(enemy_entity).despawn();
     }
 }
 
@@ -78,10 +84,7 @@ pub fn update_enemy_direction(
     }
 }
 
-pub fn tick_enemy_spawn_timer(
-    mut enemy_spawn_timer: ResMut<EnemySpawnTimer>,
-    time: Res<Time>,
-) {
+pub fn tick_enemy_spawn_timer(mut enemy_spawn_timer: ResMut<EnemySpawnTimer>, time: Res<Time>) {
     enemy_spawn_timer.timer.tick(time.delta());
 }
 

@@ -1,7 +1,7 @@
+use crate::game::config::resources::Config;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
-use crate::game::config::resources::Config;
 
 use super::components::Star;
 use super::resources::*;
@@ -26,6 +26,12 @@ pub fn spawn_stars(
             },
             Star {},
         ));
+    }
+}
+
+pub fn despawn_star(mut commands: Commands, star_query: Query<Entity, With<Star>>) {
+    if let Ok(star_entity) = star_query.get_single() {
+        commands.entity(star_entity).despawn();
     }
 }
 

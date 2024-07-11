@@ -2,9 +2,9 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
 use super::components::Player;
-use crate::game::enemy::components::*;
 use crate::game::config::events::GameOverEvent;
 use crate::game::config::resources::Config;
+use crate::game::enemy::components::*;
 use crate::game::score::resources::*;
 use crate::game::star::components::Star;
 
@@ -23,6 +23,12 @@ pub fn spawn_player(
         },
         Player {},
     ));
+}
+
+pub fn despawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>) {
+    if let Ok(player_entity) = player_query.get_single() {
+        commands.entity(player_entity).despawn();
+    }
 }
 
 pub fn player_movement(
@@ -58,7 +64,7 @@ pub fn player_movement(
 pub fn confine_player_movement(
     mut player_query: Query<&mut Transform, With<Player>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    config: Res<Config>
+    config: Res<Config>,
 ) {
     if let Ok(mut player_transform) = player_query.get_single_mut() {
         let window = window_query.get_single().unwrap();
@@ -100,18 +106,20 @@ pub fn enemy_hit_player(
         let enemy_radius = config.enemy_size / 2.0;
 
         for enemy_transform in enemy_query.iter() {
-            let distance = player_transform.translation.distance(enemy_transform.translation);
+            let distance = player_transform
+                .translation
+                .distance(enemy_transform.translation);
 
             if distance < player_radius + enemy_radius {
-                commands.spawn((
-                    AudioBundle {
-                        source: asset_server.load("audio/explosionCrunch_000.ogg"),
-                        ..default()
-                    },
-                ));
+                commands.spawn((AudioBundle {
+                    source: asset_server.load("audio/explosionCrunch_000.ogg"),
+                    ..default()
+                },));
 
                 commands.entity(player_entity).despawn();
-                game_over_event_writer.send(GameOverEvent { score: score.value as u32 });
+                game_over_event_writer.send(GameOverEvent {
+                    score: score.value as u32,
+                });
             }
         }
     }
